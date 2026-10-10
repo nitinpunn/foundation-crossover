@@ -68,6 +68,10 @@ static void load_mesa(void)
   GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)&load_mesa, &self);
   GetModuleFileNameA(self, path, sizeof path);
   char *slash = strrchr(path, '\\'); if (slash) strcpy(slash + 1, "mesagl32.dll");
+  /* Mesa reads these when libgallium_wgl initializes; set them here so no bottle configuration is needed */
+  if (!GetEnvironmentVariableA("GALLIUM_DRIVER", NULL, 0)) SetEnvironmentVariableA("GALLIUM_DRIVER", "d3d12");
+  if (!GetEnvironmentVariableA("MESA_GL_VERSION_OVERRIDE", NULL, 0)) SetEnvironmentVariableA("MESA_GL_VERSION_OVERRIDE", "4.3");
+  if (!GetEnvironmentVariableA("MESA_GLSL_VERSION_OVERRIDE", NULL, 0)) SetEnvironmentVariableA("MESA_GLSL_VERSION_OVERRIDE", "430");
   g_mesa = LoadLibraryA(path);
   if (!g_mesa) g_mesa = LoadLibraryA("mesagl32.dll");
   if (!g_mesa) return;

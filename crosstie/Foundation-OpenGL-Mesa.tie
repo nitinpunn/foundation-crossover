@@ -5,7 +5,7 @@
   Foundation needs OpenGL 4.3; macOS stops at 4.1 and CrossOver only translates Direct3D. The
   "Foundation OpenGL 4.3 fix" component installs Mesa's Windows OpenGL implementation (d3d12 Gallium
   driver running on CrossOver's D3DMetal) plus a small shim into the bottle's C:\windows\system32 and
-  registers DLL overrides for foundation.exe only. See README.md for details and the source.
+  registers DLL overrides for foundation.exe only. The shim sets Mesa's environment (GALLIUM_DRIVER=d3d12 and the 4.3 version overrides) itself, so no bottle configuration is needed. See README.md for details and the source.
 
   Before publishing: host installer/foundation-opengl-fix.exe somewhere stable and put its URL in
   <downloadurl> below. For local use, CrossOver will ask for the installer file if it cannot download it;
@@ -18,7 +18,7 @@
       <name>Foundation OpenGL 4.3 fix (Mesa on D3DMetal)</name>
       <name lang="en">Foundation OpenGL 4.3 fix (Mesa on D3DMetal)</name>
       <appprofile>
-        <description>&lt;p&gt;Provides OpenGL 4.3 to Foundation on macOS by running Mesa's OpenGL implementation on top of CrossOver's D3DMetal. Installs opengl32.dll (shim), mesagl32.dll, libgallium_wgl.dll, dxil.dll and shim.cfg into the bottle's system32 and registers DLL overrides for foundation.exe only. Other programs in the bottle keep CrossOver's built-in OpenGL.&lt;/p&gt;</description>
+        <description>&lt;p&gt;Provides OpenGL 4.3 to Foundation on macOS by running Mesa's OpenGL implementation on top of CrossOver's D3DMetal. Installs opengl32.dll (shim), mesagl32.dll, libgallium_wgl.dll, dxil.dll and shim.cfg into the bottle's system32 and registers DLL overrides for foundation.exe only. The shim sets Mesa's environment (GALLIUM_DRIVER=d3d12 and the 4.3 version overrides) itself, so no bottle configuration is needed. Other programs in the bottle keep CrossOver's built-in OpenGL.&lt;/p&gt;</description>
         <category>Non-Applications/Components</category>
         <flag>component</flag>
         <bottletemplate>win10_64</bottletemplate>
@@ -29,18 +29,6 @@
       <installprofile>
         <installeroption>/S</installeroption>
         <installnotes lang="en">Installs silently. Remove by running the installer again with /U.</installnotes>
-        <preinstallenvironment>
-          <name>GALLIUM_DRIVER</name>
-          <value>d3d12</value>
-        </preinstallenvironment>
-        <preinstallenvironment>
-          <name>MESA_GL_VERSION_OVERRIDE</name>
-          <value>4.3</value>
-        </preinstallenvironment>
-        <preinstallenvironment>
-          <name>MESA_GLSL_VERSION_OVERRIDE</name>
-          <value>430</value>
-        </preinstallenvironment>
         <preinstallregistry>
           <key>HKEY_CURRENT_USER\Software\Wine\AppDefaults\foundation.exe\DllOverrides</key>
           <value>
