@@ -66,3 +66,52 @@ REPORTS.md verbatim, and the CrossTie link. Ask them to forward to Apple and to 
 Feedback Assistant → Developer Tools & Resources → Game Porting Toolkit. One report per issue; attach
 `glcheck.exe`, the `terrain`/`full` outputs, and the `d3d12_gs_variant.cpp` reference for §3. Apple
 reads these; a Feedback ID is also what CodeWeavers will ask for.
+
+## E. CodeWeavers compatibility database (the CrossTie)
+
+Prerequisite: codeweavers.com account, then on https://www.codeweavers.com/compatibility/crossover/foundation
+request to become the entry's **advocate** (sidebar link). The *CrossTie Editor* tab appears after staff
+approve you. Nothing can be uploaded as a file — the editor is a form; values below mirror
+`crosstie/Foundation-OpenGL-Mesa.tie`.
+
+### E1. New entry for the component (Compatibility → *Submit App*)
+- Name: `Foundation OpenGL 4.3 fix (Mesa on D3DMetal)`
+- Category: Non-Applications / Components
+- Description: *Provides OpenGL 4.3 to Foundation on macOS by running Mesa's OpenGL implementation (stock
+  mesa-dist-win 26.2.4, MIT) on top of CrossOver's D3DMetal, through a small open-source shim. Installs
+  opengl32.dll (shim), mesagl32.dll, libgallium_wgl.dll, dxil.dll and shim.cfg into the bottle's system32
+  and registers DLL overrides for foundation.exe only; other programs in the bottle are unaffected.
+  Source, tests and upstream patches: https://github.com/nitinpunn/foundation-crossover*
+
+Then its CrossTie Editor → **New Application Profile**:
+- CrossOver Version: `25.0` · Flag: **Component** · Bottle template: Windows 10 64-bit
+- Download URL (blank locale): `https://github.com/nitinpunn/foundation-crossover/releases/download/v1.0/foundation-opengl-fix.exe`
+- Advanced Install Detection → Installed File Globs: `%SystemRoot%\system32\mesagl32.dll`
+
+**New Install Profile**:
+- Installation Notes (blank locale): `Installs silently. Remove by running the installer again with /U.`
+- Install Profile tab → Installer Globs: `foundation-opengl-fix*.exe`
+- Advanced Installation Environment → Installer Silent Options: `/S`
+- Advanced Installation Steps → Pre-Install Registry:
+  key `HKEY_CURRENT_USER\Software\Wine\AppDefaults\foundation.exe\DllOverrides`,
+  value `opengl32` = `native,builtin`; value `dxil` = `native,builtin`
+- Post-installation → Skip Adding Icons: yes; Skip Document Associations: yes (no menu entries)
+
+Save (parse check), **Download Tie**, test it in a fresh bottle, then **Publish**. Note the generated
+`com.codeweavers.c4.NNNNN` id.
+
+### E2. Foundation entry → CrossTie Editor
+- Application Profile: CrossOver Version `25.0`, Flag Application, bottle template Windows 10 64-bit,
+  Advanced → Steam Id `690830`.
+- Install Profile → Pre-Dependencies: `com.codeweavers.c4.206` (Steam) and the component id from E1.
+- Installation Notes: *After installation run Steam in the bottle, log in and install Foundation. Before
+  the first launch copy usersetting.seed.config (from the GitHub repo) to "~/Documents/Polymorph
+  Games/Foundation/usersetting.config", or set windowed mode in the game's Settings. Roughly 60 fps at
+  medium settings on an M4 Max; the fix needs Apple silicon and CrossOver 25 or newer.*
+- Publish → review queue. After approval the entry shows "Install Foundation via CrossTie".
+
+### E3. In parallel (no advocate status needed)
+- Forum tab of the Foundation entry: reply in "Running Foundation from Polymorph Games" with the repo
+  link, the .tie, and the one-paragraph summary above.
+- Rate the entry for CrossOver 25.1.1 / Mac once you've played a session with the fix ("Runs well"
+  with a note that the CrossTie is required) — ratings are what move it off "known not to work".
