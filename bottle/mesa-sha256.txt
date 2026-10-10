@@ -1,0 +1,2 @@
+53e49adf87590d5b0cab8553b1e98084812040cc1fca8c487695b17b7af3702e  libgallium_wgl.dll (mesa3d-26.2.4-release-msvc x64)
+351fc8c8b695878ffb3eaa044b3ead08672a48b1a045e3c3e3975811df0f6695  mesa3d-26.2.4-release-msvc.7z

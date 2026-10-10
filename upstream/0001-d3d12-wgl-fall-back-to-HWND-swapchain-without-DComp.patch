@@ -1,0 +1,35 @@
+From: Nitin Punn <ntipun@gmail.com>
+Subject: [PATCH] d3d12/wgl: fall back to an HWND swapchain when DirectComposition is unavailable
+
+d3d12_wgl_framebuffer_resize() presents alpha pixel formats through a
+DirectComposition visual. On platforms where dcomp.dll is a stub (Wine
+on macOS with D3DMetal, for instance) dcomp_get_device() fails and the
+function returns early, so the window never gets a swapchain and nothing
+is ever presented, while the application sees no GL error at all.
+
+Fall back to DXGI_ALPHA_MODE_IGNORE and a regular CreateSwapChainForHwnd
+in that case. Alpha compositing against the desktop is lost, which no GL
+application relies on, but rendering becomes visible.
+
+Seen with Foundation (Steam 690830) requesting a cAlphaBits=8 format.
+
+--- a/src/gallium/winsys/d3d12/wgl/d3d12_wgl_framebuffer.cpp
++++ b/src/gallium/winsys/d3d12/wgl/d3d12_wgl_framebuffer.cpp
+@@ -165,6 +165,17 @@
+    desc.SampleDesc.Count = 1;
+    desc.AlphaMode = util_format_has_alpha(templ->format) ?
+       DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
++
++   /* Presenting a format with alpha goes through DirectComposition. When
++    * DComp is unavailable (e.g. Wine only stubs it) fall back to a plain
++    * HWND swapchain instead of leaving the window without a swapchain. */
++   if (desc.AlphaMode != DXGI_ALPHA_MODE_IGNORE && !framebuffer->dcomp) {
++      IDCompositionDevice *dev = dcomp_get_device();
++      if (dev)
++         framebuffer->dcomp.Attach(dev);
++      else
++         desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
++   }
+    desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+    desc.Scaling = DXGI_SCALING_STRETCH;
+ 

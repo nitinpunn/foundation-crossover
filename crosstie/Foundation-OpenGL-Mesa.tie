@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CrossTie for Foundation (Steam 690830) on CrossOver/macOS (Apple silicon).
+
+  Foundation needs OpenGL 4.3; macOS stops at 4.1 and CrossOver only translates Direct3D. The
+  "Foundation OpenGL 4.3 fix" component installs Mesa's Windows OpenGL implementation (d3d12 Gallium
+  driver running on CrossOver's D3DMetal) plus a small shim into the bottle's C:\windows\system32 and
+  registers DLL overrides for foundation.exe only. See README.md for details and the source.
+
+  Before publishing: host installer/foundation-opengl-fix.exe somewhere stable and put its URL in
+  <downloadurl> below. For local use, CrossOver will ask for the installer file if it cannot download it;
+  point it at installer/foundation-opengl-fix.exe.
+-->
+<c4p>
+  <apps>
+    <app appid="com.github.nitinpunn.foundation-opengl-fix" timestamp="2026-10-09T20:30:00-05:00">
+      <cxversion product="cxoffice">25.0</cxversion>
+      <name>Foundation OpenGL 4.3 fix (Mesa on D3DMetal)</name>
+      <name lang="en">Foundation OpenGL 4.3 fix (Mesa on D3DMetal)</name>
+      <appprofile>
+        <description>&lt;p&gt;Provides OpenGL 4.3 to Foundation on macOS by running Mesa's OpenGL implementation on top of CrossOver's D3DMetal. Installs opengl32.dll (shim), mesagl32.dll, libgallium_wgl.dll, dxil.dll and shim.cfg into the bottle's system32 and registers DLL overrides for foundation.exe only. Other programs in the bottle keep CrossOver's built-in OpenGL.&lt;/p&gt;</description>
+        <category>Non-Applications/Components</category>
+        <flag>component</flag>
+        <bottletemplate>win10_64</bottletemplate>
+        <downloadurl>https://github.com/nitinpunn/foundation-crossover/releases/download/v1.0/foundation-opengl-fix.exe</downloadurl>
+        <installerglob>foundation-opengl-fix*.exe</installerglob>
+        <installedfileglob>%SystemRoot%\system32\mesagl32.dll</installedfileglob>
+      </appprofile>
+      <installprofile>
+        <installeroption>/S</installeroption>
+        <installnotes lang="en">Installs silently. Remove by running the installer again with /U.</installnotes>
+        <preinstallenvironment>
+          <name>GALLIUM_DRIVER</name>
+          <value>d3d12</value>
+        </preinstallenvironment>
+        <preinstallenvironment>
+          <name>MESA_GL_VERSION_OVERRIDE</name>
+          <value>4.3</value>
+        </preinstallenvironment>
+        <preinstallenvironment>
+          <name>MESA_GLSL_VERSION_OVERRIDE</name>
+          <value>430</value>
+        </preinstallenvironment>
+        <preinstallregistry>
+          <key>HKEY_CURRENT_USER\Software\Wine\AppDefaults\foundation.exe\DllOverrides</key>
+          <value>
+            <name>opengl32</name>
+            <data>native,builtin</data>
+          </value>
+        </preinstallregistry>
+        <preinstallregistry>
+          <key>HKEY_CURRENT_USER\Software\Wine\AppDefaults\foundation.exe\DllOverrides</key>
+          <value>
+            <name>dxil</name>
+            <data>native,builtin</data>
+          </value>
+        </preinstallregistry>
+      </installprofile>
+    </app>
+    <app appid="com.github.nitinpunn.foundation-steam-mesa" timestamp="2026-10-09T20:30:00-05:00">
+      <cxversion product="cxoffice">25.0</cxversion>
+      <name>Foundation (Steam, OpenGL via Mesa)</name>
+      <name lang="en">Foundation (Steam, OpenGL via Mesa)</name>
+      <appprofile>
+        <description>&lt;p&gt;Foundation is a grid-less, laidback medieval city-building game. This profile installs Steam and the OpenGL 4.3 fix component, which is required on macOS.&lt;/p&gt;</description>
+        <category>Games/Strategy Games</category>
+        <flag>application</flag>
+        <bottletemplate>win10_64</bottletemplate>
+        <steamid>690830</steamid>
+      </appprofile>
+      <installprofile>
+        <installnotes lang="en">After installation: run Steam in the bottle, log in and install Foundation. Before the first launch copy usersetting.seed.config to "~/Documents/Polymorph Games/Foundation/usersetting.config" (windowed mode, cursor not clipped) or set windowed mode in the game's Settings; exclusive fullscreen is untested on this path. Expect roughly 55 fps at medium settings on an M4 Max.</installnotes>
+        <predependency>com.codeweavers.c4.206</predependency>
+        <predependency>com.github.nitinpunn.foundation-opengl-fix</predependency>
+      </installprofile>
+    </app>
+  </apps>
+</c4p>

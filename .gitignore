@@ -1,0 +1,8 @@
+# large/derived binaries go to GitHub Releases, not git
+dist/
+installer/*.exe
+patches/glretrace-patched.exe
+# runtime leftovers
+*.log
+*.ppm
+.DS_Store
