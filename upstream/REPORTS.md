@@ -7,16 +7,15 @@ mesa-dist-win 26.2.4's `d3d12` driver on CrossOver 25.1.1 / D3DMetal, macOS 26.6
 the bottle next to Mesa's `opengl32.dll` with `GALLIUM_DRIVER=d3d12`).
 
 ## 1. Mesa MR: d3d12/wgl — no swapchain when DirectComposition is unavailable
-Patch: `0001-d3d12-wgl-fall-back-to-HWND-swapchain-without-DComp.patch` (written against 26.2.4, not yet
-compiled — Mesa's Windows build was out of reach on this machine; the equivalent behaviour was validated
-by forcing `DXGI_ALPHA_MODE_IGNORE` in the binary and by steering the app to a no-alpha pixel format).
+Patch: `0001-d3d12-wgl-fall-back-to-HWND-swapchain-without-DComp.patch`. Compile-tested and verified on a
+mingw cross-build of 26.2.4 (see BUILD.md): with the patch an alpha-8 pixel format presents normally.
 
 Repro: `glcheck.exe 4 3 core hold 20 1 8` (requests cAlphaBits=8) under Wine → window stays
 transparent/unpresented, no GL error, ~3500 "fps" because Present never blocks. With cAlphaBits=0
 (`... hold 20 1 0`) it presents normally at the display rate.
 
 ## 2. Mesa MR: d3d12 — GL_MAX_SHADER_STORAGE_BLOCK_SIZE is the 128 MB gallium default
-Patch: `0002-d3d12-raise-max_shader_buffer_size.patch`. Foundation allocates 256 MB SSBOs and refuses
+Patch: `0002-d3d12-raise-max_shader_buffer_size.patch` (compile-tested, reports 1 GB). Foundation allocates 256 MB SSBOs and refuses
 when the reported cap is smaller (`setStorage() with size 268435456, bigger than
 MaxShaderStorageBufferSize (134217728)`); Mesa does not enforce the cap, so simply reporting the real
 D3D12 limit fixes it.
@@ -29,6 +28,7 @@ the case on D3DMetal. Every draw using such a shader renders nothing — no erro
 
 Repro: `glcheck.exe 4 3 compat full` → section "[program 27 mirror]": "text shader exact (flat float
 varying)" FAIL, "exact shader + glProvokingVertex(FIRST)" PASS. Any `flat` type (float/int/vec4) fails.
+Reproduced identically on a clean mingw build of 26.2.4, so it is not a mesa-dist-win packaging artifact.
 Explicit geometry shaders written by the app do work ("geometry shader (point -> quad)" PASS), so it is
 specific to the driver-generated reorder GS (`d3d12_gs_variant.cpp`, `provoking_vertex > 0`). Either
 D3DMetal mishandles that GS or Mesa should prefer `load_at_vertex`-less reordering on this adapter.
